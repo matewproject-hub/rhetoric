@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+ca
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Start Page */
+        .start-page {
+            width: 100vw;
+            height: 100vh;
+            background-image: url('Untitled design.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: opacity 0.6s ease-out;
+        }
+
+        .start-page.fade-out {
+            opacity: 0;
+        }
+
+        .start-button {
+            position: absolute;
+            bottom: 100px;
+            right: 100px;
+            padding: 20px 60px;
+            background: #0d47a1;
+            color: white;
+            font-size: 32px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .start-button:hover {
+            background: #1565c0;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Practice Page */
+        .practice-page {
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #4dd0e1 0%, #26c6da 100%);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.6s ease-in;
+        }
+
+        .practice-page.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .video-container {
+            width: 80%;
+            max-width: 900px;
+            background: #1a1a1a;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .video-display {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camera-placeholder {
+            color: #666;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .video-controls {
+            background: #2a2a2a;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .control-btn {
+            padding: 12px 30px;
+            background: #0d47a1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #1565c0;
+        }
+
+        .control-btn.stop {
+            background: #d32f2f;
+        }
+
+        .control-btn.stop:hover {
+            background: #f44336;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .recording-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
+        }
+
+        .recording-indicator.active {
+            display: flex;
+        }
+
+        .rec-dot {
+            width: 12px;
+            height: 12px;
+            background: #f44336;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .rec-text {
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Start Page -->
+        <div class="start-page" id="startPage">
+            <button class="start-button" id="startPracticeBtn">Start Practice</button>
+        </div>
+
+    <!-- Practice Page -->
+    <div class="practice-page" id="practicePage">
+        <button class="back-btn" onclick="goBack()">← Back</button>
+        
+        <div class="video-container">
+            <div class="video-display">
+                <video id="videoElement" autoplay playsinline></video>
+                <div class="camera-placeholder" id="placeholder">
+                    Click "Start Camera" to begin
+                </div>
+                <div class="recording-indicator" id="recordingIndicator">
+                    <div class="rec-dot"></div>
+                    <span class="rec-text">RECORDING</span>
+                </div>
+            </div>
+            <div class="video-controls">
+                <button class="control-btn" onclick="startCamera()">Start Camera</button>
+                <button class="control-btn stop" onclick="stopCamera()">Stop Camera</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stream = null;
+
+        function startPractice() {
+            console.log('Start Practice button clicked!');
+            const startPage = document.getElementById('startPage');
+            const practicePage = document.getElementById('practicePage');
+            
+            startPage.classList.add('fade-out');
+            
+            setTimeout(() => {
+                startPage.style.display = 'none';
+                practicePage.classList.add('active');
+            }, 600);
+        }
+
+        function goBack() {
+            stopCamera();
+            const startPage = document.getElementById('startPage');
+            const practicePage = document.getElementById('practicePage');
+            
+            practicePage.classList.remove('active');
+            
+            setTimeout(() => {
+                startPage.style.display = 'flex';
+                startPage.classList.remove('fade-out');
+            }, 100);
+        }
+
+        async function startCamera() {
+            const video = document.getElementById('videoElement');
+            const placeholder = document.getElementById('placeholder');
+            const indicator = document.getElementById('recordingIndicator');
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: true, 
+                    audio: true 
+                });
+                video.srcObject = stream;
+                placeholder.style.display = 'none';
+                video.style.display = 'block';
+                indicator.classList.add('active');
+            } catch (err) {
+                alert('Unable to access camera. Please grant camera permissions.');
+                console.error('Error accessing camera:', err);
+            }
+        }
+
+        function stopCamera() {
+            const video = document.getElementById('videoElement');
+            const placeholder = document.getElementById('placeholder');
+            const indicator = document.getElementById('recordingIndicator');
+            
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                video.style.display = 'none';
+                placeholder.style.display = 'block';
+                indicator.classList.remove('active');
+                stream = null;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const startBtn = document.getElementById('startPracticeBtn');
+            if (startBtn) {
+                startBtn.addEventListener('click', startPractice);
+            }
+        });
+    </script>
+</body>
+</html>
