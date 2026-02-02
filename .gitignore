@@ -1,0 +1,18 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+venv/
+env/
+.env
+
+# Media & Temp Files
+uploads/
+*.wav
+*.mp4
+*.mkv
+
+# Model Checkpoints (Whisper often downloads these)
+models/
